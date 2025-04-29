@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: python-app
-          image: tuusuario/simple-python-app:latest  # Cambia esto con tu imagen de DockerHub o registry
+          image: diegoayi/simple-python-app:latest  # Cambia esto con tu imagen de DockerHub o registry
           ports:
             - containerPort: 5000
 ---
