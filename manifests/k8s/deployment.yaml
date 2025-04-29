@@ -14,9 +14,12 @@ spec:
     spec:
       containers:
         - name: python-app
-          image: diegoayi/simple-python-app:latest  # Cambia esto con tu imagen de DockerHub o registry
+          image: diegoayi/simple-python-app:latest  # Asegúrate de que la imagen sea la correcta
           ports:
             - containerPort: 5000
+          env:
+            - name: FLASK_ENV
+              value: "development"  # Asegúrate de que Flask esté en desarrollo para logs detallados
 ---
 apiVersion: v1
 kind: Service
@@ -27,5 +30,5 @@ spec:
     app: simple-python-app
   ports:
     - protocol: TCP
-      port: 80
-      targetPort: 5000
+      port: 80  # El puerto por el que se expondrá el servicio
+      targetPort: 5000  # El puerto interno en el que la aplicación Flask está escuchando
