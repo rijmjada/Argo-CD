@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple-python-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: simple-python-app
+  template:
+    metadata:
+      labels:
+        app: simple-python-app
+    spec:
+      containers:
+        - name: python-app
+          image: tuusuario/simple-python-app:latest  # Cambia esto con tu imagen de DockerHub o registry
+          ports:
+            - containerPort: 5000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: simple-python-app
+spec:
+  selector:
+    app: simple-python-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5000
