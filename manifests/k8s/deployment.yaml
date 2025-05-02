@@ -14,21 +14,29 @@ spec:
     spec:
       containers:
         - name: python-app
-          image: diegoayi/simple-python-app:latest  # Asegúrate de que la imagen sea la correcta
+          image: diegoayi/simple-python-app:latest
           ports:
             - containerPort: 5000
           env:
             - name: FLASK_ENV
-              value: "development"  # Asegúrate de que Flask esté en desarrollo para logs detallados
+              value: "development"
+          volumeMounts:
+            - name: app-storage
+              mountPath: /app/data
+      volumes:
+        - name: app-storage
+          emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: simple-python-app
 spec:
+  type: NodePort  # Cambiado para que puedas acceder desde fuera del clúster (opcional)
   selector:
     app: simple-python-app
   ports:
     - protocol: TCP
-      port: 80  # El puerto por el que se expondrá el servicio
-      targetPort: 5000  # El puerto interno en el que la aplicación Flask está escuchando
+      port: 80
+      targetPort: 5000
+      nodePort: 30080  # Puerto fijo (puede estar entre 30000-32767), o dejá que se asigne automáticamente
