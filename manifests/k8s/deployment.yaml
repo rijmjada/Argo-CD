@@ -8,6 +8,7 @@ spec:
     storage: 1Gi
   accessModes:
     - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
   hostPath:
     path: /data/python-app  # Ruta en el nodo
 ---
@@ -16,6 +17,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: simple-python-pvc
 spec:
+  volumeName: simple-python-pv  # Vincula al PV manual
   accessModes:
     - ReadWriteOnce
   resources:
