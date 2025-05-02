@@ -1,0 +1,139 @@
+# 1. PersistentVolume y PersistentVolumeClaim
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: simple-python-pv
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /mnt/disks
+    type: DirectoryOrCreate
+  storageClassName: standard
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: simple-python-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  volumeName: simple-python-pv
+
+---
+# 2. Deployment de la aplicación Python
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple-python-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: simple-python-app
+  template:
+    metadata:
+      labels:
+        app: simple-python-app
+    spec:
+      containers:
+        - name: python-app
+          image: diegoayi/simple-python-app:latest
+          ports:
+            - containerPort: 5000
+          volumeMounts:
+            - name: app-storage
+              mountPath: /app/data
+      volumes:
+        - name: app-storage
+          persistentVolumeClaim:
+            claimName: simple-python-pvc
+
+---
+# 3. Service para la aplicación Python
+apiVersion: v1
+kind: Service
+metadata:
+  name: simple-python-app
+spec:
+  selector:
+    app: simple-python-app
+  ports:
+    - protocol: TCP
+      port: 5000
+      targetPort: 5000
+  type: ClusterIP  # Expuesto dentro del clúster (sin NodePort por ahora)
+
+---
+# 4. ConfigMap para NGINX
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+data:
+  nginx.conf: |
+    events {}
+
+    http {
+        server {
+            listen 80;
+            location / {
+                proxy_pass http://simple-python-app:5000;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            }
+        }
+    }
+
+---
+# 5. Deployment de NGINX
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-proxy
+  template:
+    metadata:
+      labels:
+        app: nginx-proxy
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:latest
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: nginx-config
+
+---
+# 6. Service para NGINX
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-proxy
+spec:
+  selector:
+    app: nginx-proxy
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: NodePort  # Expuesto fuera del clúster
+
