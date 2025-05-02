@@ -1,3 +1,27 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: simple-python-pv
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /data/python-app  # Ruta en el nodo
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: simple-python-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -25,18 +49,19 @@ spec:
               mountPath: /app/data
       volumes:
         - name: app-storage
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: simple-python-pvc
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: simple-python-app
 spec:
-  type: NodePort  # Cambiado para que puedas acceder desde fuera del clúster (opcional)
+  type: NodePort
   selector:
     app: simple-python-app
   ports:
     - protocol: TCP
       port: 80
       targetPort: 5000
-      nodePort: 30080  # Puerto fijo (puede estar entre 30000-32767), o dejá que se asigne automáticamente
+      nodePort: 30080
