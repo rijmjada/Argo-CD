@@ -1,6 +1,6 @@
 
 ### 1. ✅ Requisitos previos
-- Tener instalado: `minikube`, `kubectl`, `docker`, `python3`.
+- Tener instalado: `minikube`,`python`
 
 
 ### 2. 🚀 Iniciar Minikube
@@ -14,7 +14,7 @@ minikube start --driver=docker
 Ejecutar el script:
 
 ```bash
-python3 instalar-argocd.py
+python .\instalar-argocd.py
 ```
 
 Este script:
@@ -30,6 +30,7 @@ Este script:
 1. Acceder a [https://localhost:8080](https://localhost:8080).
 2. Iniciar sesión con las credenciales mostradas en el script.
 3. Crear una nueva aplicación en Argo CD:
+   - Repositorio para linkear app https://github.com/rijmjada/Argo-CD
    - En Source cargar la url de este repositorio.
    - En Path 'k8s_app_yml'
    - Namespace `default` o el que uses.
